@@ -1,4 +1,5 @@
 "use client";
+import { ProfileCard } from "@/components/profileCard";
 import {
   useAuthModal,
   useLogout,
@@ -28,6 +29,7 @@ export default function Home() {
           <button className="btn btn-primary mt-6" onClick={() => logout()}>
             Log out
           </button>
+          <ProfileCard />
         </div>
       ) : (
         <button className="btn btn-primary" onClick={openAuthModal}>

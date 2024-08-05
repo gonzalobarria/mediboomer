@@ -3,7 +3,7 @@ import {
   cookieStorage,
   createConfig,
 } from "@account-kit/react";
-import { sepolia } from "@account-kit/infra";
+import { arbitrumSepolia } from "@account-kit/infra";
 import { QueryClient } from "@tanstack/react-query";
 
 const uiConfig: AlchemyAccountsUIConfig = {
@@ -14,7 +14,7 @@ const uiConfig: AlchemyAccountsUIConfig = {
   },
 };
 
-const chain = sepolia;
+export const chain = arbitrumSepolia;
 
 export const config = createConfig(
   {
@@ -26,5 +26,15 @@ export const config = createConfig(
   },
   uiConfig
 );
+
+export const accountType = "MultiOwnerModularAccount";
+// setup the gas policy for sponsoring transactions
+export const gasManagerConfig = {
+  policyId: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID!,
+};
+// additional options for our account client
+export const accountClientOptions = {
+  txMaxRetries: 20,
+};
 
 export const queryClient = new QueryClient();
