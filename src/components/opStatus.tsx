@@ -1,13 +1,14 @@
 import { LoadingSpinner } from "./ui/loading-spinner";
-import { SendUserOperationResult } from "@alchemy/aa-core";
+import { SendUserOperationWithEOA } from "@account-kit/react";
 import { chain } from "@/config";
+import { EntryPointRegistryBase } from "@alchemy/aa-core";
 
 export const OpStatus = ({
   sendUserOperationResult,
   isSendingUserOperation,
   isSendUserOperationError,
 }: {
-  sendUserOperationResult: SendUserOperationResult | undefined | any;
+  sendUserOperationResult: SendUserOperationWithEOA<keyof EntryPointRegistryBase<unknown>> | undefined;
   isSendingUserOperation: boolean;
   isSendUserOperationError: Error | null;
 }) => {
