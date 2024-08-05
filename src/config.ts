@@ -18,7 +18,8 @@ const chain = sepolia;
 
 export const config = createConfig(
   {
-    apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "",
+    rpcUrl: "/api/rpc/chain/" + chain.id,
+    signerConnection: { rpcUrl: "/api/rpc" },
     chain,
     ssr: true,
     storage: cookieStorage,
