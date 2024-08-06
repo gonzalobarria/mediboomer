@@ -1,6 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers"
 import { assert, expect } from "chai"
 import { ethers } from "hardhat"
+import { UserRole } from "./enums"
 
 describe("MediBoomer", function () {
   async function deployMediBoomer() {
@@ -14,6 +15,30 @@ describe("MediBoomer", function () {
   }
 
   describe("Basic Test", () => {
+    it("Add User", async () => {
+      const { mediBoomer, account1, account2 } =
+        await loadFixture(deployMediBoomer)
+      let id = "123-1323DSR"
+      let userName = "Gonzalo"
+      let email = "gbm@gbm.com"
+
+      await mediBoomer.addUser(id, userName, email, account1, UserRole.Patient)
+
+      const patientList = await mediBoomer.getPatientList()
+
+      assert(patientList[0].name, userName)
+
+      id = "5489-6QWER"
+      userName = "PedroPE"
+      email = "pedro@gbm.com"
+
+      await mediBoomer.addUser(id, userName, email, account2, UserRole.Doctor)
+
+      await expect(
+        mediBoomer.connect(account1).getPatientList(),
+      ).to.be.revertedWith("User is not a doctor")
+    })
+
     it("Add Ways of Administering Medicines", async () => {
       const { mediBoomer } = await loadFixture(deployMediBoomer)
       const wamName = "Oral"
@@ -79,7 +104,7 @@ describe("MediBoomer", function () {
       await mediBoomer.addMedicalRecipe(account1, prescriptionArr)
       const pml = await mediBoomer.getPatientMedicalRecipeList(account1)
 
-      assert(pml[0].patient, account1 + '')
+      assert(pml[0].patient, account1 + "")
     })
   })
 })
