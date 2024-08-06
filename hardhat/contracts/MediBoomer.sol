@@ -44,6 +44,7 @@ contract MediBoomer is Ownable, AccessControl {
     string id;
     string name;
     string email;
+    address contractAddress;
     UserRole userRole;
     bool isExists;
   }
@@ -104,7 +105,9 @@ contract MediBoomer is Ownable, AccessControl {
   /// @dev map user with his info
   mapping(address => User) userInfo;
 
-  constructor() {}
+  constructor() {
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+  }
 
   modifier onlyUser() {
     require(!userInfo[msg.sender].isExists, "User not registered");
@@ -112,7 +115,7 @@ contract MediBoomer is Ownable, AccessControl {
   }
 
   modifier onlyDoctor() {
-    require(hasRole(DOCTOR_ROLE, msg.sender), "User is not a doctor");
+    require(hasRole(DOCTOR_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "User is not a doctor");
     _;
   }
 
@@ -197,24 +200,26 @@ contract MediBoomer is Ownable, AccessControl {
     string memory _id,
     string memory _name,
     string memory _email,
+    address _contractAddress,
     UserRole _userRole
-  ) public onlyUser {
-    userInfo[msg.sender] = User({
+  ) public {
+    userInfo[_contractAddress] = User({
       id: _id,
       name: _name,
       email: _email,
       userRole: _userRole,
+      contractAddress: _contractAddress,
       isExists: true
     });
 
-    if (_userRole == UserRole.Doctor) grantRole(DOCTOR_ROLE, msg.sender);
+    if (_userRole == UserRole.Doctor) grantRole(DOCTOR_ROLE, _contractAddress);
 
     if (_userRole == UserRole.Pharmacist)
-      grantRole(PHARMACIST_ROLE, msg.sender);
+      grantRole(PHARMACIST_ROLE, _contractAddress);
 
     if (_userRole == UserRole.Patient) {
-      grantRole(PATIENT_ROLE, msg.sender);
-      patientList.push(userInfo[msg.sender]);
+      grantRole(PATIENT_ROLE, _contractAddress);
+      patientList.push(userInfo[_contractAddress]);
     }
   }
 
