@@ -33,6 +33,12 @@ contract MediBoomer is Ownable, AccessControl {
     Patient
   }
 
+  enum MedicalRecipeStatus {
+    Created,
+    PartialDelivered,
+    FullyDelivered
+  }
+
   /// @dev Personal Information of the user
   struct User {
     string id;
@@ -65,7 +71,9 @@ contract MediBoomer is Ownable, AccessControl {
   struct Prescription {
     uint256 id;
     uint256 medicineId;
-    uint8 dose;
+    string dose;
+    bool isDelivered;
+    uint8 duration; // in days
     IntakeTime[] intakeTimeList;
   }
 
@@ -73,7 +81,8 @@ contract MediBoomer is Ownable, AccessControl {
   struct MedicalRecipe {
     uint256 id;
     address patient;
-    Prescription[] prescriptions;
+    uint256[] prescriptions; // Array of Prescription Id
+    MedicalRecipeStatus status;
   }
 
   WaysAdministeringMedicines[] wamList;
@@ -84,7 +93,18 @@ contract MediBoomer is Ownable, AccessControl {
   User[] patientList;
 
   /// @dev map patient with their medical recipes
-  mapping(address => MedicalRecipe[]) patientMedicalRecipeList;
+  mapping(address => uint256[]) mapPatientMedicalRecipes;
+
+  /// @dev map medicalRecipe Id with his medical recipe
+  mapping(uint256 => MedicalRecipe) mapMedicalRecipes;
+
+  /// @dev map medical Recipe Id with their prescriptions
+  // mapping(uint256 => Prescription[]) prescriptionMRList;
+  /// @dev map prescription Id with his prescriotion
+  mapping(uint256 => Prescription) mapPrescriptions;
+
+  // /// @dev map prescription Id with their intake time
+  // mapping(uint256 => IntakeTime[]) intakeTimePList;
 
   /// @dev map user with his info
   mapping(address => User) userInfo;
@@ -132,50 +152,194 @@ contract MediBoomer is Ownable, AccessControl {
     medicineId.increment();
   }
 
-  /// @dev Add a Medical Recipe
+  function addPrescription(
+    uint256 _prescriptionId,
+    uint256 _medicineID,
+    string memory _dose,
+    uint8 _duration,
+    IntakeTime[] memory _intakeTimeList
+  ) public {
+    Prescription storage prescription = mapPrescriptions[_prescriptionId];
+    prescription.id = _prescriptionId;
+    prescription.medicineId = _medicineID;
+    prescription.dose = _dose;
+    prescription.isDelivered = false;
+    prescription.duration = _duration;
+
+    for (uint8 i = 0; i < _intakeTimeList.length; i++) {
+      prescription.intakeTimeList.push(
+        IntakeTime({id: _intakeTimeList[i].id, time: _intakeTimeList[i].time})
+      );
+    }
+  }
+
   function addMedicalRecipe(
     address _patient,
-    Prescription[] memory _prescriptionList
+    Prescription[] calldata _prescriptionList
   ) public {
     uint256 id = medicalRecipeId.current();
-    Prescription[] memory prescriptionList = new Prescription[](
-      _prescriptionList.length
-    );
-    uint j = 0;
+    MedicalRecipe storage medicalRecipe = mapMedicalRecipes[id];
 
-    for (uint i = 0; i < _prescriptionList.length; i++) {
+    medicalRecipe.id = id;
+    medicalRecipe.patient = _patient;
+    medicalRecipe.status = MedicalRecipeStatus.Created;
+
+    for (uint256 i = 0; i < _prescriptionList.length; i++) {
       uint256 prescId = prescriptionId.current();
+      addPrescription(
+        prescId,
+        _prescriptionList[i].medicineId,
+        _prescriptionList[i].dose,
+        _prescriptionList[i].duration,
+        _prescriptionList[i].intakeTimeList
+      );
 
-      Prescription memory prescription = Prescription({
-        id: prescId,
-        medicineId: _prescriptionList[i].medicineId,
-        dose: _prescriptionList[i].dose,
-        intakeTimeList: _prescriptionList[i].intakeTimeList
-      });
-
-      prescriptionList[j] = prescription;
-      j++;
+      medicalRecipe.prescriptions.push(prescId);
       prescriptionId.increment();
     }
 
-    // MedicalRecipe memory mr = MedicalRecipe({
-    //   id: id,
-    //   patient: _patient,
-    //   prescriptions: prescriptionList
-    // });
-
-    // MedicalRecipe[] memory patMRL = patientMedicalRecipeList[_patient];
-    // patMRL.push(mr);
-    patientMedicalRecipeList[_patient].push(
-      MedicalRecipe({
-        id: id,
-        patient: _patient,
-        prescriptions: prescriptionList
-      })
-    );
-
     medicalRecipeId.increment();
+    mapPatientMedicalRecipes[_patient].push(id);
   }
+
+  // /// @dev Add a Medical Recipe
+  // function addMedicalRecipe(
+  //   address _patient,
+  //   Prescription[] memory _prescriptionList
+  // ) public {
+  //   uint256 id = medicalRecipeId.current();
+
+  //   // Prescription[] memory prescLst = new Prescription[](
+  //   //   _prescriptionList.length
+  //   // );
+
+  //   for (uint8 i = 0; i < _prescriptionList.length; i++) {
+
+  //     IntakeTime[] memory itk = _prescriptionList[i].intakeTimeList;
+
+  //   //   IntakeTime[] memory itkT = new IntakeTime[](itk.length);
+
+  //   //   uint256 prescId = prescriptionId.current();
+
+  //   //   // prescLst[i].id = prescId;
+  //   //   // prescLst[i].medicineId = _prescriptionList[i].medicineId;
+  //   //   // prescLst[i].dose = _prescriptionList[i].dose;
+
+  //   //   for (uint8 j = 0; j < itk.length; j++) {
+  //   //     intakeTimePList[prescId].push(itk[j]);
+  //   //   }
+
+  //   //   // prescriptionMRList[id].push(
+  //   //   //   Prescription({
+  //   //   //     id: prescId,
+  //   //   //     medicineId: prescLst[i].medicineId,
+  //   //   //     dose: prescLst[i].dose,
+  //   //   //     intakeTimeList: itk
+  //   //   //   })
+  //   //   // );
+
+  //   //   prescriptionId.increment();
+  //   // }
+
+  //   // // MedicalRecipe memory mrLst = MedicalRecipe({
+  //   // //   id: id,
+  //   // //   patient: _patient,
+  //   // //   prescriptions: prescLst
+  //   // // });
+
+  //   // // MedicalRecipe[] storage patMRL = patientMedicalRecipeList[_patient];
+
+  //   // // patMRL.push(mrLst);
+
+  //   // patientMedicalRecipeList[_patient].push(
+  //   //   MedicalRecipe({id: id, patient: _patient})
+  //   // );
+
+  //   // medicalRecipeId.increment();
+
+  //   // Prescription[] memory prescriptionList = new Prescription[](
+  //   //   _prescriptionList.length
+  //   // );
+  //   // uint j = 0;
+
+  //   // for (uint i = 0; i < _prescriptionList.length; i++) {
+  //   //   uint256 prescId = prescriptionId.current();
+
+  //   //   Prescription memory prescription = Prescription({
+  //   //     id: prescId,
+  //   //     medicineId: _prescriptionList[i].medicineId,
+  //   //     dose: _prescriptionList[i].dose,
+  //   //     intakeTimeList: _prescriptionList[i].intakeTimeList
+  //   //   });
+
+  //   //   prescriptionList[j] = prescription;
+  //   //   j++;
+  //   //   prescriptionId.increment();
+  //   // }
+
+  //   // // MedicalRecipe memory mr = MedicalRecipe({
+  //   // //   id: id,
+  //   // //   patient: _patient,
+  //   // //   prescriptions: prescriptionList
+  //   // // });
+
+  //   // // MedicalRecipe[] storage patMRL = patientMedicalRecipeList[_patient];
+  //   // // patMRL.push(mr);
+  //   // patientMedicalRecipeList[_patient].push(
+  //   //   MedicalRecipe({
+  //   //     id: id,
+  //   //     patient: _patient,
+  //   //     prescriptions: prescriptionList
+  //   //   })
+  //   // );
+
+  //   // medicalRecipeId.increment();
+  // }
+
+  // /// @dev Add a Medical Recipe
+  // function addMedicalRecipe(
+  //   address _patient,
+  //   Prescription[] memory _prescriptionList
+  // ) public {
+  //   uint256 id = medicalRecipeId.current();
+  //   Prescription[] memory prescriptionList = new Prescription[](
+  //     _prescriptionList.length
+  //   );
+  //   uint j = 0;
+
+  //   for (uint i = 0; i < _prescriptionList.length; i++) {
+  //     uint256 prescId = prescriptionId.current();
+
+  //     Prescription memory prescription = Prescription({
+  //       id: prescId,
+  //       medicineId: _prescriptionList[i].medicineId,
+  //       dose: _prescriptionList[i].dose,
+  //       intakeTimeList: _prescriptionList[i].intakeTimeList
+  //     });
+
+  //     prescriptionList[j] = prescription;
+  //     j++;
+  //     prescriptionId.increment();
+  //   }
+
+  //   // MedicalRecipe memory mr = MedicalRecipe({
+  //   //   id: id,
+  //   //   patient: _patient,
+  //   //   prescriptions: prescriptionList
+  //   // });
+
+  //   // MedicalRecipe[] storage patMRL = patientMedicalRecipeList[_patient];
+  //   // patMRL.push(mr);
+  //   patientMedicalRecipeList[_patient].push(
+  //     MedicalRecipe({
+  //       id: id,
+  //       patient: _patient,
+  //       prescriptions: prescriptionList
+  //     })
+  //   );
+
+  //   medicalRecipeId.increment();
+  // }
 
   /// @dev Add a new user to the platform
   function addUser(
@@ -226,7 +390,14 @@ contract MediBoomer is Ownable, AccessControl {
   function getPatientMedicalRecipeList(
     address _address
   ) public view returns (MedicalRecipe[] memory) {
-    return patientMedicalRecipeList[_address];
+    uint256[] memory mrList = mapPatientMedicalRecipes[_address];
+    MedicalRecipe[] memory mr = new MedicalRecipe[](mrList.length);
+
+    for (uint256 i = 0; i < mrList.length; i++) {
+      mr[i] = mapMedicalRecipes[mrList[i]];
+    }
+
+    return mr;
   }
 
   /// @dev Get a List of Patients
