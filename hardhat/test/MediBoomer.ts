@@ -14,6 +14,72 @@ describe("MediBoomer", function () {
   }
 
   describe("Basic Test", () => {
-    
+    it("Add Ways of Administering Medicines", async () => {
+      const { mediBoomer } = await loadFixture(deployMediBoomer)
+      const wamName = "Oral"
+
+      await mediBoomer.addWaysAdministeringMedicines(wamName)
+
+      const wamList = await mediBoomer.getWamList()
+
+      assert(wamList[0].name, wamName)
+    })
+
+    it("Add Medicine", async () => {
+      const { mediBoomer } = await loadFixture(deployMediBoomer)
+      const wamName = "Oral"
+      await mediBoomer.addWaysAdministeringMedicines(wamName)
+      const wamList = await mediBoomer.getWamList()
+
+      const medicineName = "Aspirina"
+      await mediBoomer.addMedicine(medicineName, wamList[0].id)
+      const medicineList = await mediBoomer.getMedicineList()
+
+      assert(medicineList[0].name, medicineName)
+    })
+
+    it("Add Intake Time", async () => {
+      const { mediBoomer } = await loadFixture(deployMediBoomer)
+      const time = "15:00"
+      await mediBoomer.addIntakeTime(time)
+      const ittList = await mediBoomer.getIntakeTimeList()
+
+      assert(ittList[0].time, time)
+    })
+
+    it("Add Medical Recipe", async () => {
+      const { mediBoomer, account1 } = await loadFixture(deployMediBoomer)
+      const time = "15:00"
+      await mediBoomer.addIntakeTime(time)
+
+      const wamName = "Oral"
+      await mediBoomer.addWaysAdministeringMedicines(wamName)
+      const wamList = await mediBoomer.getWamList()
+
+      const medicineName = "Aspirina"
+      await mediBoomer.addMedicine(medicineName, wamList[0].id)
+      const medicineList = await mediBoomer.getMedicineList()
+      const dose = "2 cucharadas"
+
+      const prescriptionArr = [
+        {
+          id: 0,
+          medicineId: medicineList[0].id,
+          dose,
+          duration: 2,
+          isDelivered: false,
+          intakeTimeList: [
+            {
+              id: 0,
+              time,
+            },
+          ],
+        },
+      ]
+      await mediBoomer.addMedicalRecipe(account1, prescriptionArr)
+      const pml = await mediBoomer.getPatientMedicalRecipeList(account1)
+
+      assert(pml[0].patient, account1 + '')
+    })
   })
 })
