@@ -57,7 +57,7 @@ contract MediBoomer is Ownable, AccessControl {
   /// @dev Medicine and his way of administering
   struct Medicine {
     uint256 id;
-    string medicineName;
+    string name;
     uint256 wamId;
   }
 
@@ -141,14 +141,9 @@ contract MediBoomer is Ownable, AccessControl {
   }
 
   /// @dev Mantainer for Medicine
-  function addMedicine(
-    string memory _medicineName,
-    uint8 _wamId
-  ) public onlyOwner {
+  function addMedicine(string memory _name, uint8 _wamId) public onlyOwner {
     uint256 medId = medicineId.current();
-    medicineList.push(
-      Medicine({id: medId, medicineName: _medicineName, wamId: _wamId})
-    );
+    medicineList.push(Medicine({id: medId, name: _name, wamId: _wamId}));
     medicineId.increment();
   }
 
@@ -158,7 +153,7 @@ contract MediBoomer is Ownable, AccessControl {
     string memory _dose,
     uint8 _duration,
     IntakeTime[] memory _intakeTimeList
-  ) public {
+  ) internal {
     Prescription storage prescription = mapPrescriptions[_prescriptionId];
     prescription.id = _prescriptionId;
     prescription.medicineId = _medicineID;
