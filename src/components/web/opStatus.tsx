@@ -1,4 +1,4 @@
-import { LoadingSpinner } from "./ui/loading-spinner";
+import { LoadingSpinner } from "../ui/loading-spinner";
 import { SendUserOperationWithEOA } from "@account-kit/react";
 import { chain } from "@/config";
 import { EntryPointRegistryBase } from "@alchemy/aa-core";

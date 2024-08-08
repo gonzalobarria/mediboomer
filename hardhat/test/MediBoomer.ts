@@ -9,7 +9,7 @@ describe("MediBoomer", function () {
 
     const MediBoomer = await ethers.getContractFactory("MediBoomer")
 
-    const mediBoomer = await MediBoomer.deploy()
+    const mediBoomer = await MediBoomer.deploy("30")
 
     return { mediBoomer, owner, account1, account2 }
   }
@@ -93,6 +93,7 @@ describe("MediBoomer", function () {
           dose,
           duration: 2,
           isDelivered: false,
+          timeDelivered: 0,
           intakeTimeList: [
             {
               id: 0,

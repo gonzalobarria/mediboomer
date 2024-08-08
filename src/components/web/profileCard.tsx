@@ -2,9 +2,9 @@
 
 import React, { FormEvent } from "react";
 import { chain, accountType, accountClientOptions as opts } from "@/config";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Card } from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { Hex } from "viem";
 import { OpStatus } from "./opStatus";
 import {

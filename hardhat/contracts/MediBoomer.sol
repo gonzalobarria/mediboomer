@@ -4,8 +4,9 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract MediBoomer is Ownable, AccessControl {
+contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
   bytes32 public constant DOCTOR_ROLE = keccak256("DOCTOR_ROLE");
   bytes32 public constant PHARMACIST_ROLE = keccak256("PHARMACIST_ROLE");
   bytes32 public constant PATIENT_ROLE = keccak256("PATIENT_ROLE");
@@ -26,6 +27,20 @@ contract MediBoomer is Ownable, AccessControl {
 
   /// @dev Prescription id counter
   Counters.Counter prescriptionId;
+
+  /**
+   * Public counter variable
+   */
+  uint256 public counter;
+
+  /**
+   * Use an interval in seconds and a timestamp to slow execution of Upkeep
+   */
+  uint256 public immutable interval;
+  uint256 public lastTimeStamp;
+
+  /* Events */
+  event WamAdded(address indexed userAddress);
 
   enum UserRole {
     Doctor,
@@ -74,6 +89,7 @@ contract MediBoomer is Ownable, AccessControl {
     uint256 medicineId;
     string dose;
     bool isDelivered;
+    uint256 timeDelivered;
     uint8 duration; // in days
     IntakeTime[] intakeTimeList;
   }
@@ -105,8 +121,12 @@ contract MediBoomer is Ownable, AccessControl {
   /// @dev map user with his info
   mapping(address => User) userInfo;
 
-  constructor() {
+  constructor(uint256 updateInterval) {
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    interval = updateInterval;
+    lastTimeStamp = block.timestamp;
+
+    counter = 0;
   }
 
   modifier onlyUser() {
@@ -115,7 +135,11 @@ contract MediBoomer is Ownable, AccessControl {
   }
 
   modifier onlyDoctor() {
-    require(hasRole(DOCTOR_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "User is not a doctor");
+    require(
+      hasRole(DOCTOR_ROLE, msg.sender) ||
+        hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+      "User is not a doctor"
+    );
     _;
   }
 
@@ -124,22 +148,49 @@ contract MediBoomer is Ownable, AccessControl {
     _;
   }
 
+  function checkUpkeep(
+    bytes memory checkData
+  ) public view override returns (bool upkeepNeeded, bytes memory performData) {
+    bool hasElements = wamList.length == counter;
+    bool isTimeExpired = (block.timestamp - lastTimeStamp) > interval;
+
+    upkeepNeeded = hasElements && isTimeExpired;
+    // don't used
+    performData = checkData;
+  }
+
+  function performUpkeep(bytes calldata /* performData */) external override {
+    (bool upkeepNeeded, ) = checkUpkeep("");
+    require(upkeepNeeded, "No se ha cumplido aun");
+
+    lastTimeStamp = block.timestamp;
+    counter = counter + 1;
+  }
+
+  // TODO: Permisos
   /// @dev Mantainer for WAM
-  function addWaysAdministeringMedicines(string memory _name) public onlyOwner {
+  function addWaysAdministeringMedicines(
+    string memory _name
+  ) public /* onlyOwner */ {
     uint256 id = wamId.current();
     wamList.push(WaysAdministeringMedicines({id: id, name: _name}));
     wamId.increment();
+
+    emit WamAdded(msg.sender);
   }
 
   /// @dev Mantainer for IntakeTime
-  function addIntakeTime(string memory _time) public onlyOwner {
+  function addIntakeTime(string memory _time) public /* onlyOwner */ {
     uint256 id = intakeTimeId.current();
     intakeTimeList.push(IntakeTime({id: id, time: _time}));
     intakeTimeId.increment();
   }
 
   /// @dev Mantainer for Medicine
-  function addMedicine(string memory _name, uint8 _wamId) public onlyOwner {
+  function addMedicine(
+    string memory _name,
+    uint8 _wamId
+  ) public /* onlyOwner */ {
     uint256 medId = medicineId.current();
     medicineList.push(Medicine({id: medId, name: _name, wamId: _wamId}));
     medicineId.increment();
