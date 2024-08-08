@@ -26,6 +26,9 @@ export const config = createConfig(
     chain,
     ssr: true,
     storage: cookieStorage,
+    sessionConfig: {
+      expirationTimeMs: 86400000,
+    },
   },
   uiConfig
 )
