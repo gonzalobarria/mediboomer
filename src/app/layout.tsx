@@ -8,6 +8,7 @@ import SideBar from "@/components/layouts/sideBar"
 import TopNav from "@/components/layouts/topNav"
 import { fonts } from "@/lib/fontApp"
 import MediBoomerProvider from "@/components/web3/context/mediBoomerContext"
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: "MediBoomer",
@@ -37,6 +38,7 @@ export default function RootLayout({
               </div>
             </div>
           </MediBoomerProvider>
+          <Toaster />
         </Providers>
       </body>
     </html>

@@ -124,10 +124,6 @@ export declare namespace MediBoomer {
 export interface MediBoomerInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "DEFAULT_ADMIN_ROLE"
-      | "DOCTOR_ROLE"
-      | "PATIENT_ROLE"
-      | "PHARMACIST_ROLE"
       | "addIntakeTime"
       | "addMedicalRecipe"
       | "addMedicine"
@@ -140,47 +136,20 @@ export interface MediBoomerInterface extends Interface {
       | "getMedicineList"
       | "getPatientList"
       | "getPatientMedicalRecipeList"
-      | "getRoleAdmin"
       | "getUserInfo"
       | "getWamList"
-      | "grantRole"
-      | "hasRole"
       | "interval"
       | "lastTimeStamp"
       | "owner"
       | "performUpkeep"
       | "renounceOwnership"
-      | "renounceRole"
-      | "revokeRole"
-      | "supportsInterface"
       | "transferOwnership"
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic:
-      | "OwnershipTransferred"
-      | "RoleAdminChanged"
-      | "RoleGranted"
-      | "RoleRevoked"
-      | "WamAdded"
+    nameOrSignatureOrTopic: "OwnershipTransferred" | "WamAdded"
   ): EventFragment;
 
-  encodeFunctionData(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "DOCTOR_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "PATIENT_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "PHARMACIST_ROLE",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "addIntakeTime",
     values: [string]
@@ -199,7 +168,7 @@ export interface MediBoomerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "addWaysAdministeringMedicines",
-    values: [string]
+    values: [string, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "checkUpkeep",
@@ -227,24 +196,12 @@ export interface MediBoomerInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleAdmin",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getUserInfo",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getWamList",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "grantRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hasRole",
-    values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "interval", values?: undefined): string;
   encodeFunctionData(
@@ -261,38 +218,10 @@ export interface MediBoomerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "renounceRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "revokeRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "supportsInterface",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "DOCTOR_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "PATIENT_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "PHARMACIST_ROLE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "addIntakeTime",
     data: BytesLike
@@ -336,16 +265,10 @@ export interface MediBoomerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleAdmin",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getUserInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getWamList", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "interval", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "lastTimeStamp",
@@ -358,15 +281,6 @@ export interface MediBoomerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceRole",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -388,69 +302,12 @@ export namespace OwnershipTransferredEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace RoleAdminChangedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    previousAdminRole: BytesLike,
-    newAdminRole: BytesLike
-  ];
-  export type OutputTuple = [
-    role: string,
-    previousAdminRole: string,
-    newAdminRole: string
-  ];
-  export interface OutputObject {
-    role: string;
-    previousAdminRole: string;
-    newAdminRole: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RoleGrantedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RoleRevokedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace WamAddedEvent {
-  export type InputTuple = [userAddress: AddressLike];
-  export type OutputTuple = [userAddress: string];
+  export type InputTuple = [userAddress: AddressLike, name: string];
+  export type OutputTuple = [userAddress: string, name: string];
   export interface OutputObject {
     userAddress: string;
+    name: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -501,14 +358,6 @@ export interface MediBoomer extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
-
-  DOCTOR_ROLE: TypedContractMethod<[], [string], "view">;
-
-  PATIENT_ROLE: TypedContractMethod<[], [string], "view">;
-
-  PHARMACIST_ROLE: TypedContractMethod<[], [string], "view">;
-
   addIntakeTime: TypedContractMethod<[_time: string], [void], "nonpayable">;
 
   addMedicalRecipe: TypedContractMethod<
@@ -536,7 +385,7 @@ export interface MediBoomer extends BaseContract {
   >;
 
   addWaysAdministeringMedicines: TypedContractMethod<
-    [_name: string],
+    [_name: string, userAddress: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -579,8 +428,6 @@ export interface MediBoomer extends BaseContract {
     "view"
   >;
 
-  getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
-
   getUserInfo: TypedContractMethod<
     [userAddress: AddressLike],
     [MediBoomer.UserStructOutput],
@@ -590,18 +437,6 @@ export interface MediBoomer extends BaseContract {
   getWamList: TypedContractMethod<
     [],
     [MediBoomer.WaysAdministeringMedicinesStructOutput[]],
-    "view"
-  >;
-
-  grantRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  hasRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
     "view"
   >;
 
@@ -615,24 +450,6 @@ export interface MediBoomer extends BaseContract {
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
-  renounceRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  revokeRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  supportsInterface: TypedContractMethod<
-    [interfaceId: BytesLike],
-    [boolean],
-    "view"
-  >;
-
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
@@ -643,18 +460,6 @@ export interface MediBoomer extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
-  getFunction(
-    nameOrSignature: "DEFAULT_ADMIN_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "DOCTOR_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "PATIENT_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "PHARMACIST_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "addIntakeTime"
   ): TypedContractMethod<[_time: string], [void], "nonpayable">;
@@ -687,7 +492,11 @@ export interface MediBoomer extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "addWaysAdministeringMedicines"
-  ): TypedContractMethod<[_name: string], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [_name: string, userAddress: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "checkUpkeep"
   ): TypedContractMethod<
@@ -722,9 +531,6 @@ export interface MediBoomer extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "getRoleAdmin"
-  ): TypedContractMethod<[role: BytesLike], [string], "view">;
-  getFunction(
     nameOrSignature: "getUserInfo"
   ): TypedContractMethod<
     [userAddress: AddressLike],
@@ -736,20 +542,6 @@ export interface MediBoomer extends BaseContract {
   ): TypedContractMethod<
     [],
     [MediBoomer.WaysAdministeringMedicinesStructOutput[]],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "grantRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "hasRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
     "view"
   >;
   getFunction(
@@ -768,23 +560,6 @@ export interface MediBoomer extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "renounceRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "revokeRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "supportsInterface"
-  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
-  getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
 
@@ -794,27 +569,6 @@ export interface MediBoomer extends BaseContract {
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleAdminChanged"
-  ): TypedContractEvent<
-    RoleAdminChangedEvent.InputTuple,
-    RoleAdminChangedEvent.OutputTuple,
-    RoleAdminChangedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleGranted"
-  ): TypedContractEvent<
-    RoleGrantedEvent.InputTuple,
-    RoleGrantedEvent.OutputTuple,
-    RoleGrantedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleRevoked"
-  ): TypedContractEvent<
-    RoleRevokedEvent.InputTuple,
-    RoleRevokedEvent.OutputTuple,
-    RoleRevokedEvent.OutputObject
   >;
   getEvent(
     key: "WamAdded"
@@ -836,40 +590,7 @@ export interface MediBoomer extends BaseContract {
       OwnershipTransferredEvent.OutputObject
     >;
 
-    "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
-    RoleAdminChanged: TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
-
-    "RoleGranted(bytes32,address,address)": TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
-    RoleGranted: TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
-
-    "RoleRevoked(bytes32,address,address)": TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
-    >;
-    RoleRevoked: TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
-    >;
-
-    "WamAdded(address)": TypedContractEvent<
+    "WamAdded(address,string)": TypedContractEvent<
       WamAddedEvent.InputTuple,
       WamAddedEvent.OutputTuple,
       WamAddedEvent.OutputObject

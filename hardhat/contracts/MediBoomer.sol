@@ -35,7 +35,7 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
   uint256 public lastTimeStamp;
 
   /* Events */
-  event WamAdded(address indexed userAddress);
+  event WamAdded(address indexed userAddress, string indexed name);
 
   enum UserRole {
     Doctor,
@@ -150,13 +150,14 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
   // TODO: Permisos
   /// @dev Mantainer for WAM
   function addWaysAdministeringMedicines(
-    string memory _name
+    string memory _name,
+    address userAddress
   ) public /* onlyOwner */ {
     uint256 id = wamId.current();
     wamList.push(WaysAdministeringMedicines({id: id, name: _name}));
     wamId.increment();
 
-    emit WamAdded(msg.sender);
+    emit WamAdded(userAddress, _name);
   }
 
   /// @dev Mantainer for IntakeTime

@@ -9,9 +9,11 @@ import MediBoomerAbi from "@/components/abis/MediBoomer.json"
 import { Hex } from "viem"
 import { useSearchParams } from "next/navigation"
 import { UserRole } from "@/lib/constants"
+import { toast } from "sonner"
 
 export default function Home() {
   const searchParams = useSearchParams()
+  const client = useBundlerClient()
   const { addUser } = useMediBoomerContext()
   const user = useUser()
   const { isInitializing, isAuthenticating, isConnected, status } =
@@ -24,6 +26,7 @@ export default function Home() {
     addWaysAdministeringMedicines,
     getWamList,
   } = useMediBoomerContext()
+  const [showToast, setShowToast] = useState(false)
 
   const [wamList, setWamList] = useState<
     MediBoomer.WaysAdministeringMedicinesStruct[] | undefined
@@ -45,13 +48,31 @@ export default function Home() {
     asyncFunc()
   }, [user])
 
-  const client = useBundlerClient()
+  useEffect(() => {
+    if (user && !showToast) {
+      setShowToast(true)
 
-  const unwatch = client.watchContractEvent({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
-    abi: MediBoomerAbi.abi,
-    onLogs: (logs) => console.log(logs),
-  })
+      const unwatch = client.watchContractEvent({
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+        abi: MediBoomerAbi.abi,
+        eventName: "WamAdded",
+        onLogs: (logs) => {
+          /* @ts-ignore */
+          if (logs[0]?.args?.userAddress === user?.address) {
+            console.log("showing toast")
+
+            toast("Wam Agregado", {
+              description: "Wam Agregado Exitosamente",
+              action: {
+                label: "Close",
+                onClick: () => console.log("close"),
+              },
+            })
+          }
+        },
+      })
+    }
+  }, [user, showToast])
 
   const addAlUser = async () => {
     if (!user) return
@@ -81,7 +102,9 @@ export default function Home() {
           <div className="my-2 flex flex-col gap-4">
             <Button
               disabled={isSendingUserOperation}
-              onClick={() => addWaysAdministeringMedicines()}
+              onClick={() =>
+                addWaysAdministeringMedicines("Oral20", user.address)
+              }
             >
               Add WAM
             </Button>

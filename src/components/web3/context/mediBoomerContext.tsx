@@ -25,7 +25,7 @@ type MediBoomerContextType = {
   isSendingUserOperation: boolean
   isSendUserOperationError: Error | null
   getMedicineList: () => Promise<MediBoomer.MedicineStruct[] | undefined>
-  addWaysAdministeringMedicines: () => void
+  addWaysAdministeringMedicines: (name: string, userAddress: string) => void
   getWamList: () => Promise<
     MediBoomer.WaysAdministeringMedicinesStruct[] | undefined
   >
@@ -80,17 +80,17 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
     return medicineList
   }
 
-  const addWaysAdministeringMedicines = (): void => {
+  const addWaysAdministeringMedicines = (
+    name: string,
+    userAddress: string
+  ): void => {
     const target = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex
     const value = "0"
 
     const data = encodeFunctionData({
       abi: MediBoomerAbi.abi,
       functionName: "addWaysAdministeringMedicines",
-      args: ["Otra 4"],
-      // args: ["Intravenosa"],
-      // args: ["Sublingual"],
-      // args: ["Oral"],
+      args: [name, userAddress],
     })
 
     sendUserOperation({
