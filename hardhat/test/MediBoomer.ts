@@ -22,21 +22,17 @@ describe("MediBoomer", function () {
       let userName = "Gonzalo"
       let email = "gbm@gbm.com"
 
-      await mediBoomer.addUser(id, userName, email, account1, UserRole.Patient)
+      await mediBoomer.addUser(
+        id,
+        userName,
+        email,
+        account1.address,
+        UserRole.Patient,
+      )
 
       const patientList = await mediBoomer.getPatientList()
 
       assert(patientList[0].name, userName)
-
-      id = "5489-6QWER"
-      userName = "PedroPE"
-      email = "pedro@gbm.com"
-
-      await mediBoomer.addUser(id, userName, email, account2, UserRole.Doctor)
-
-      await expect(
-        mediBoomer.connect(account1).getPatientList(),
-      ).to.be.revertedWith("User is not a doctor")
     })
 
     it("Add Ways of Administering Medicines", async () => {
@@ -102,8 +98,8 @@ describe("MediBoomer", function () {
           ],
         },
       ]
-      await mediBoomer.addMedicalRecipe(account1, prescriptionArr)
-      const pml = await mediBoomer.getPatientMedicalRecipeList(account1)
+      await mediBoomer.addMedicalRecipe(account1.address, prescriptionArr)
+      const pml = await mediBoomer.getPatientMedicalRecipeList(account1.address)
 
       assert(pml[0].patient, account1 + "")
     })

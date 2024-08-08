@@ -1,16 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
-  bytes32 public constant DOCTOR_ROLE = keccak256("DOCTOR_ROLE");
-  bytes32 public constant PHARMACIST_ROLE = keccak256("PHARMACIST_ROLE");
-  bytes32 public constant PATIENT_ROLE = keccak256("PATIENT_ROLE");
-
+contract MediBoomer is Ownable, AutomationCompatibleInterface {
   using Counters for Counters.Counter;
 
   /// @dev WaysAdministeringMedicines id counter
@@ -122,29 +117,14 @@ contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
   mapping(address => User) userInfo;
 
   constructor(uint256 updateInterval) {
-    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
 
     counter = 0;
   }
 
-  modifier onlyUser() {
-    require(!userInfo[msg.sender].isExists, "User not registered");
-    _;
-  }
-
-  modifier onlyDoctor() {
-    require(
-      hasRole(DOCTOR_ROLE, msg.sender) ||
-        hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-      "User is not a doctor"
-    );
-    _;
-  }
-
-  modifier onlyPatient() {
-    require(hasRole(PATIENT_ROLE, msg.sender), "User is not a patient");
+  modifier onlyUser(address userAddress) {
+    require(userInfo[userAddress].isExists, "User not registered");
     _;
   }
 
@@ -254,6 +234,8 @@ contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
     address _contractAddress,
     UserRole _userRole
   ) public {
+    require(!userInfo[_contractAddress].isExists, "User already exists");
+
     userInfo[_contractAddress] = User({
       id: _id,
       name: _name,
@@ -263,15 +245,8 @@ contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
       isExists: true
     });
 
-    if (_userRole == UserRole.Doctor) grantRole(DOCTOR_ROLE, _contractAddress);
-
-    if (_userRole == UserRole.Pharmacist)
-      grantRole(PHARMACIST_ROLE, _contractAddress);
-
-    if (_userRole == UserRole.Patient) {
-      grantRole(PATIENT_ROLE, _contractAddress);
+    if (_userRole == UserRole.Patient)
       patientList.push(userInfo[_contractAddress]);
-    }
   }
 
   /// @dev Get the list of Intake Times
@@ -308,7 +283,7 @@ contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
   }
 
   /// @dev Get a List of Patients
-  function getPatientList() public view onlyDoctor returns (User[] memory) {
+  function getPatientList() public view returns (User[] memory) {
     return patientList;
   }
 
@@ -328,5 +303,9 @@ contract MediBoomer is Ownable, AccessControl, AutomationCompatibleInterface {
     }
 
     return mrList[idList];
+  }
+
+  function getUserInfo(address userAddress) public view returns (User memory) {
+    return userInfo[userAddress];
   }
 }

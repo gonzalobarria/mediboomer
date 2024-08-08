@@ -3,7 +3,7 @@
 import { ReactNode, createContext, useContext } from "react"
 import { MediBoomer } from "@/components/abis/types/MediBoomer"
 import MediBoomerAbi from "@/components/abis/MediBoomer.json"
-import { AlchemyProvider } from "ethers"
+import { AlchemyProvider, ZeroAddress } from "ethers"
 import {
   SendUserOperationWithEOA,
   useSendUserOperation,
@@ -29,6 +29,13 @@ type MediBoomerContextType = {
   getWamList: () => Promise<
     MediBoomer.WaysAdministeringMedicinesStruct[] | undefined
   >
+  addUser: (
+    id: string,
+    name: string,
+    email: string,
+    userAddress: string,
+    userRole: number
+  ) => Promise<void | string>
 }
 
 export const MediBoomerContext = createContext<MediBoomerContextType | null>(
@@ -80,9 +87,47 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
     const data = encodeFunctionData({
       abi: MediBoomerAbi.abi,
       functionName: "addWaysAdministeringMedicines",
-      args: ["Intravenosa"],
+      args: ["Otra 4"],
+      // args: ["Intravenosa"],
       // args: ["Sublingual"],
       // args: ["Oral"],
+    })
+
+    sendUserOperation({
+      uo: { target, data, value: value ? BigInt(value) : 0n },
+    })
+  }
+
+  const addUser = async (
+    id: string,
+    name: string,
+    email: string,
+    userAddress: string,
+    userRole: number
+  ): Promise<void | string> => {
+    const value = "0"
+    const provider = new AlchemyProvider(
+      chain.id,
+      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
+    )
+
+    const contract = fetchContract(provider)
+
+    const user = await contract.getUserInfo(userAddress)
+
+    if (user.contractAddress !== ZeroAddress) {
+      console.log("user :>> ", user)
+      console.log("user.id :>> ", user.contractAddress)
+      return "ya existe"
+    }
+
+    const target = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex
+    const addr = userAddress as Hex
+
+    const data = encodeFunctionData({
+      abi: MediBoomerAbi.abi,
+      functionName: "addUser",
+      args: [id, name, email, addr, userRole],
     })
 
     sendUserOperation({
@@ -113,6 +158,7 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
         getMedicineList,
         addWaysAdministeringMedicines,
         getWamList,
+        addUser,
       }}
     >
       {children}

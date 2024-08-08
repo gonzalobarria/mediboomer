@@ -141,6 +141,7 @@ export interface MediBoomerInterface extends Interface {
       | "getPatientList"
       | "getPatientMedicalRecipeList"
       | "getRoleAdmin"
+      | "getUserInfo"
       | "getWamList"
       | "grantRole"
       | "hasRole"
@@ -162,7 +163,6 @@ export interface MediBoomerInterface extends Interface {
       | "RoleGranted"
       | "RoleRevoked"
       | "WamAdded"
-      | "WamsListed"
   ): EventFragment;
 
   encodeFunctionData(
@@ -229,6 +229,10 @@ export interface MediBoomerInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUserInfo",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getWamList",
@@ -335,6 +339,10 @@ export interface MediBoomerInterface extends Interface {
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUserInfo",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getWamList", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
@@ -439,18 +447,6 @@ export namespace RoleRevokedEvent {
 }
 
 export namespace WamAddedEvent {
-  export type InputTuple = [userAddress: AddressLike];
-  export type OutputTuple = [userAddress: string];
-  export interface OutputObject {
-    userAddress: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace WamsListedEvent {
   export type InputTuple = [userAddress: AddressLike];
   export type OutputTuple = [userAddress: string];
   export interface OutputObject {
@@ -584,6 +580,12 @@ export interface MediBoomer extends BaseContract {
   >;
 
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
+
+  getUserInfo: TypedContractMethod<
+    [userAddress: AddressLike],
+    [MediBoomer.UserStructOutput],
+    "view"
+  >;
 
   getWamList: TypedContractMethod<
     [],
@@ -723,6 +725,13 @@ export interface MediBoomer extends BaseContract {
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;
   getFunction(
+    nameOrSignature: "getUserInfo"
+  ): TypedContractMethod<
+    [userAddress: AddressLike],
+    [MediBoomer.UserStructOutput],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "getWamList"
   ): TypedContractMethod<
     [],
@@ -814,13 +823,6 @@ export interface MediBoomer extends BaseContract {
     WamAddedEvent.OutputTuple,
     WamAddedEvent.OutputObject
   >;
-  getEvent(
-    key: "WamsListed"
-  ): TypedContractEvent<
-    WamsListedEvent.InputTuple,
-    WamsListedEvent.OutputTuple,
-    WamsListedEvent.OutputObject
-  >;
 
   filters: {
     "OwnershipTransferred(address,address)": TypedContractEvent<
@@ -876,17 +878,6 @@ export interface MediBoomer extends BaseContract {
       WamAddedEvent.InputTuple,
       WamAddedEvent.OutputTuple,
       WamAddedEvent.OutputObject
-    >;
-
-    "WamsListed(address)": TypedContractEvent<
-      WamsListedEvent.InputTuple,
-      WamsListedEvent.OutputTuple,
-      WamsListedEvent.OutputObject
-    >;
-    WamsListed: TypedContractEvent<
-      WamsListedEvent.InputTuple,
-      WamsListedEvent.OutputTuple,
-      WamsListedEvent.OutputObject
     >;
   };
 }

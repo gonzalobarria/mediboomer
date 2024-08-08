@@ -6,7 +6,7 @@
 
 ```shell
 npx hardhat ignition deploy ./ignition/modules/MediBoomer.ts --network baseSepolia
-npx hardhat verify --network baseSepolia 0x9b6a3f5f23106c62A304F81b1596Cb38E34eD1F9 "30"
+npx hardhat verify --network baseSepolia 0xC72dF0AB52fd055EE702bD00f4AdF6ddeD0d0d18 "30"
 ```
 
 ### Fraxtal

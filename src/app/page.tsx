@@ -3,20 +3,16 @@ import { MediBoomer } from "@/components/abis/types/MediBoomer"
 import { Button } from "@/components/ui/button"
 import { OpStatus } from "@/components/web/opStatus"
 import { useMediBoomerContext } from "@/components/web3/context/mediBoomerContext"
-import { chain } from "@/config"
-import { fetchContract } from "@/lib/utils"
-import { useSignerStatus, useUser } from "@account-kit/react"
-import { AlchemyProvider } from "ethers"
+import { useBundlerClient, useSignerStatus, useUser } from "@account-kit/react"
 import { useEffect, useState } from "react"
-
-const provider = new AlchemyProvider(
-  chain.id,
-  process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
-)
-
-const contract = fetchContract(provider)
+import MediBoomerAbi from "@/components/abis/MediBoomer.json"
+import { Hex } from "viem"
+import { useSearchParams } from "next/navigation"
+import { UserRole } from "@/lib/constants"
 
 export default function Home() {
+  const searchParams = useSearchParams()
+  const { addUser } = useMediBoomerContext()
   const user = useUser()
   const { isInitializing, isAuthenticating, isConnected, status } =
     useSignerStatus()
@@ -49,18 +45,29 @@ export default function Home() {
     asyncFunc()
   }, [user])
 
-  const handleWamAdded = (address: string) => {
-    console.log("address :>> ", address)
-  }
+  const client = useBundlerClient()
 
-  useEffect(() => {
-    if (!contract) return
-    contract.on("WamAdded", handleWamAdded)
+  const unwatch = client.watchContractEvent({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+    abi: MediBoomerAbi.abi,
+    onLogs: (logs) => console.log(logs),
+  })
 
-    return () => {
-      contract.removeAllListeners("WamAdded")
+  const addAlUser = async () => {
+    if (!user) return
+
+    const param = "aa-is-signup"
+
+    if (searchParams.has(param)) {
+      const paramTmp = searchParams.get(param)
+
+      if (paramTmp === "true") {
+        const name = "Juan Salvador Gaviota"
+        const role = UserRole.Patient
+        await addUser(user.userId, name, user.email!, user.address, role)
+      }
     }
-  }, [contract])
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 gap-4 justify-center text-center">
@@ -78,6 +85,8 @@ export default function Home() {
             >
               Add WAM
             </Button>
+            <Button onClick={() => addAlUser()}>addealo</Button>
+
             {wamList?.map((wam) => (
               <div key={wam.id}>
                 <span>{wam.id}</span>
