@@ -3,16 +3,17 @@
 import { ReactNode, createContext, useContext } from "react"
 import { MediBoomer } from "@/components/abis/types/MediBoomer"
 import MediBoomerAbi from "@/components/abis/MediBoomer.json"
-import { AlchemyProvider, ZeroAddress } from "ethers"
+import { ZeroAddress } from "ethers"
 import {
   SendUserOperationWithEOA,
+  useBundlerClient,
   useSendUserOperation,
   useSmartAccountClient,
 } from "@account-kit/react"
-import { accountType, accountClientOptions as opts, chain } from "@/config"
+import { accountType, accountClientOptions as opts } from "@/config"
 import { Hex, encodeFunctionData } from "viem"
 import { EntryPointRegistryBase } from "@alchemy/aa-core"
-import { fetchContract } from "@/lib/utils"
+import { ClientWithAlchemyMethods } from "@account-kit/infra"
 
 type MediBoomerProviderProps = {
   children: ReactNode
@@ -36,6 +37,7 @@ type MediBoomerContextType = {
     userAddress: string,
     userRole: number
   ) => Promise<void | string>
+  clientBundler: ClientWithAlchemyMethods
 }
 
 export const MediBoomerContext = createContext<MediBoomerContextType | null>(
@@ -48,6 +50,7 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
     policyId: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID!,
     opts,
   })
+  const clientBundler = useBundlerClient()
 
   const {
     sendUserOperation,
@@ -69,13 +72,12 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
   const getMedicineList = async (): Promise<
     MediBoomer.MedicineStruct[] | undefined
   > => {
-    const provider = new AlchemyProvider(
-      chain.id,
-      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
-    )
-
-    const contract = fetchContract(provider)
-    const medicineList = await contract.getMedicineList()
+    const medicineList = (await clientBundler.readContract({
+      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+      abi: MediBoomerAbi.abi,
+      functionName: "getMedicineList",
+      args: [],
+    })) as MediBoomer.MedicineStruct[]
 
     return medicineList
   }
@@ -106,14 +108,13 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
     userRole: number
   ): Promise<void | string> => {
     const value = "0"
-    const provider = new AlchemyProvider(
-      chain.id,
-      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
-    )
 
-    const contract = fetchContract(provider)
-
-    const user = await contract.getUserInfo(userAddress)
+    const user = (await clientBundler.readContract({
+      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+      abi: MediBoomerAbi.abi,
+      functionName: "getUserInfo",
+      args: [userAddress],
+    })) as MediBoomer.UserStruct
 
     if (user.contractAddress !== ZeroAddress) {
       console.log("user :>> ", user)
@@ -138,13 +139,12 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
   const getWamList = async (): Promise<
     MediBoomer.WaysAdministeringMedicinesStruct[] | undefined
   > => {
-    const provider = new AlchemyProvider(
-      chain.id,
-      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY
-    )
-
-    const contract = fetchContract(provider)
-    const wamList = await contract.getWamList()
+    const wamList = (await clientBundler.readContract({
+      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+      abi: MediBoomerAbi.abi,
+      functionName: "getWamList",
+      args: [],
+    })) as MediBoomer.WaysAdministeringMedicinesStruct[]
 
     return wamList
   }
@@ -159,6 +159,7 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
         addWaysAdministeringMedicines,
         getWamList,
         addUser,
+        clientBundler,
       }}
     >
       {children}

@@ -3,21 +3,17 @@ import { MediBoomer } from "@/components/abis/types/MediBoomer"
 import { Button } from "@/components/ui/button"
 import { OpStatus } from "@/components/web/opStatus"
 import { useMediBoomerContext } from "@/components/web3/context/mediBoomerContext"
-import { useBundlerClient, useSignerStatus, useUser } from "@account-kit/react"
+import { useUser } from "@account-kit/react"
 import { useEffect, useState } from "react"
 import MediBoomerAbi from "@/components/abis/MediBoomer.json"
 import { Hex } from "viem"
-import { useSearchParams } from "next/navigation"
 import { UserRole } from "@/lib/constants"
 import { toast } from "sonner"
 
 export default function Home() {
-  const searchParams = useSearchParams()
-  const client = useBundlerClient()
   const { addUser } = useMediBoomerContext()
   const user = useUser()
-  const { isInitializing, isAuthenticating, isConnected, status } =
-    useSignerStatus()
+
   const {
     isSendingUserOperation,
     sendUserOperationResult,
@@ -25,6 +21,7 @@ export default function Home() {
     getMedicineList,
     addWaysAdministeringMedicines,
     getWamList,
+    clientBundler,
   } = useMediBoomerContext()
   const [showToast, setShowToast] = useState(false)
 
@@ -52,7 +49,7 @@ export default function Home() {
     if (user && !showToast) {
       setShowToast(true)
 
-      const unwatch = client.watchContractEvent({
+      const unwatch = clientBundler.watchContractEvent({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
         abi: MediBoomerAbi.abi,
         eventName: "WamAdded",
@@ -77,17 +74,9 @@ export default function Home() {
   const addAlUser = async () => {
     if (!user) return
 
-    const param = "aa-is-signup"
-
-    if (searchParams.has(param)) {
-      const paramTmp = searchParams.get(param)
-
-      if (paramTmp === "true") {
-        const name = "Juan Salvador Gaviota"
-        const role = UserRole.Patient
-        await addUser(user.userId, name, user.email!, user.address, role)
-      }
-    }
+    const name = "Juan Salvador Gaviota"
+    const role = UserRole.Patient
+    await addUser(user.userId, name, user.email!, user.address, role)
   }
 
   return (
@@ -103,7 +92,7 @@ export default function Home() {
             <Button
               disabled={isSendingUserOperation}
               onClick={() =>
-                addWaysAdministeringMedicines("Oral20", user.address)
+                addWaysAdministeringMedicines("Oral21", user.address)
               }
             >
               Add WAM
