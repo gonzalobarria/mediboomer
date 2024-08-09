@@ -57,7 +57,7 @@ const ConnectButton = () => {
         </div>
       ) : (
         <button className="btn btn-primary" onClick={openAuthModal}>
-          Login new
+          Login or Sign-up
         </button>
       )}
     </div>

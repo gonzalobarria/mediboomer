@@ -56,6 +56,7 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
     string email;
     address contractAddress;
     UserRole userRole;
+    uint256 createdAt;
     bool isExists;
   }
 
@@ -94,6 +95,7 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
     uint256 id;
     address patient;
     uint256[] prescriptions; // Array of Prescription Id
+    uint256 createdAt;
     MedicalRecipeStatus status;
   }
 
@@ -199,15 +201,16 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
   }
 
   function addMedicalRecipe(
-    address _patient,
+    address _patientAddress,
     Prescription[] calldata _prescriptionList
   ) public {
     uint256 id = medicalRecipeId.current();
     MedicalRecipe storage medicalRecipe = mapMedicalRecipes[id];
 
     medicalRecipe.id = id;
-    medicalRecipe.patient = _patient;
+    medicalRecipe.patient = _patientAddress;
     medicalRecipe.status = MedicalRecipeStatus.Created;
+    medicalRecipe.createdAt = block.timestamp;
 
     for (uint256 i = 0; i < _prescriptionList.length; i++) {
       uint256 prescId = prescriptionId.current();
@@ -224,7 +227,7 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
     }
 
     medicalRecipeId.increment();
-    mapPatientMedicalRecipes[_patient].push(id);
+    mapPatientMedicalRecipes[_patientAddress].push(id);
   }
 
   /// @dev Add a new user to the platform
@@ -243,6 +246,7 @@ contract MediBoomer is Ownable, AutomationCompatibleInterface {
       email: _email,
       userRole: _userRole,
       contractAddress: _contractAddress,
+      createdAt: block.timestamp,
       isExists: true
     });
 

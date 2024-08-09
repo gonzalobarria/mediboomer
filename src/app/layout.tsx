@@ -30,7 +30,7 @@ export default function RootLayout({
       <body className={`${fonts} relative h-screen`}>
         <Providers initialState={initialState}>
           <MediBoomerProvider>
-            <div className="flex w-full flex-col bg-muted/40">
+            <div className="flex w-full flex-col bg-[#e1f8dc66]">
               <SideBar />
               <div className="flex flex-col sm:pl-14">
                 <TopNav />

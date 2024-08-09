@@ -12,7 +12,7 @@ import { SmartAccountClientOptsSchema } from "@alchemy/aa-core"
 const uiConfig: AlchemyAccountsUIConfig = {
   illustrationStyle: "outline",
   auth: {
-    sections: [[{ type: "email" }], [{ type: "injected" }]],
+    sections: [[{ type: "email" }]],
     addPasskeyOnSignup: false,
   },
 }

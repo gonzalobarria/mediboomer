@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { Home, Package2, ShoppingCart } from "lucide-react"
 
@@ -9,7 +11,7 @@ import {
 } from "@/components/ui/tooltip"
 
 const menu: { uri: string; Component: JSX.Element }[] = [
-  { uri: "calendar", Component: <ShoppingCart className="h-5 w-5" /> },
+  { uri: "register", Component: <ShoppingCart className="h-5 w-5" /> },
 ]
 
 const SideBar = () => {

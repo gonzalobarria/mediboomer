@@ -1,6 +1,12 @@
 "use client"
 
-import { ReactNode, createContext, useContext } from "react"
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 import { MediBoomer } from "@/components/abis/types/MediBoomer"
 import MediBoomerAbi from "@/components/abis/MediBoomer.json"
 import { ZeroAddress } from "ethers"
@@ -9,6 +15,7 @@ import {
   useBundlerClient,
   useSendUserOperation,
   useSmartAccountClient,
+  useUser,
 } from "@account-kit/react"
 import { accountType, accountClientOptions as opts } from "@/config"
 import { Hex, encodeFunctionData } from "viem"
@@ -30,6 +37,10 @@ type MediBoomerContextType = {
   getWamList: () => Promise<
     MediBoomer.WaysAdministeringMedicinesStruct[] | undefined
   >
+  getUserInfo: (
+    userAddress: string
+  ) => Promise<MediBoomer.UserStruct[] | undefined>
+
   addUser: (
     id: string,
     name: string,
@@ -38,6 +49,7 @@ type MediBoomerContextType = {
     userRole: number
   ) => Promise<void | string>
   clientBundler: ClientWithAlchemyMethods
+  userInfo: MediBoomer.UserStruct | undefined
 }
 
 export const MediBoomerContext = createContext<MediBoomerContextType | null>(
@@ -45,12 +57,14 @@ export const MediBoomerContext = createContext<MediBoomerContextType | null>(
 )
 
 const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
+  const user = useUser()
+  const clientBundler = useBundlerClient()
   const { client } = useSmartAccountClient({
     type: accountType,
     policyId: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID!,
     opts,
   })
-  const clientBundler = useBundlerClient()
+  const [userInfo, setUserInfo] = useState<MediBoomer.UserStruct>()
 
   const {
     sendUserOperation,
@@ -68,6 +82,23 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
       // [optional] Do something with the error
     },
   })
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      if (user) {
+        const userInfo = (await clientBundler.readContract({
+          address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+          abi: MediBoomerAbi.abi,
+          functionName: "getUserInfo",
+          args: [user.address],
+        })) as MediBoomer.UserStruct
+
+        setUserInfo(userInfo)
+      }
+    }
+
+    asyncFunc()
+  }, [user])
 
   const getMedicineList = async (): Promise<
     MediBoomer.MedicineStruct[] | undefined
@@ -149,16 +180,33 @@ const MediBoomerProvider = ({ children }: MediBoomerProviderProps) => {
     return wamList
   }
 
+  const getUserInfo = async (
+    userAddress: string
+  ): Promise<MediBoomer.UserStruct[] | undefined> => {
+    const userInfo = (await clientBundler.readContract({
+      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+      abi: MediBoomerAbi.abi,
+      functionName: "getUserInfo",
+      args: [userAddress],
+    })) as MediBoomer.UserStruct[]
+
+    return userInfo
+  }
+
   return (
     <MediBoomerContext.Provider
       value={{
+        addUser,
+        addWaysAdministeringMedicines,
+        getMedicineList,
+        getUserInfo,
+        getWamList,
+        userInfo,
+
         isSendingUserOperation,
         sendUserOperationResult,
         isSendUserOperationError,
-        getMedicineList,
-        addWaysAdministeringMedicines,
-        getWamList,
-        addUser,
+
         clientBundler,
       }}
     >
