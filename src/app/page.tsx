@@ -34,41 +34,41 @@ export default function Home() {
 
   useEffect(() => {
     const asyncFunc = async () => {
-      if (user) {
-        const wl = await getWamList()
-        setWamList(wl)
-        const ml = await getMedicineList()
-        setMedicineList(ml)
-      }
+      if (!user) return
+
+      const wl = await getWamList()
+      setWamList(wl)
+      const ml = await getMedicineList()
+      setMedicineList(ml)
     }
 
     asyncFunc()
   }, [user])
 
   useEffect(() => {
-    if (user && !showToast) {
-      setShowToast(true)
+    if (!user || showToast) return
 
-      const unwatch = clientBundler.watchContractEvent({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
-        abi: MediBoomerAbi.abi,
-        eventName: "WamAdded",
-        onLogs: (logs) => {
-          /* @ts-ignore */
-          if (logs[0]?.args?.userAddress === user?.address) {
-            console.log("showing toast")
+    setShowToast(true)
 
-            toast("Wam Agregado", {
-              description: "Wam Agregado Exitosamente",
-              action: {
-                label: "Close",
-                onClick: () => console.log("close"),
-              },
-            })
-          }
-        },
-      })
-    }
+    const unwatch = clientBundler.watchContractEvent({
+      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Hex,
+      abi: MediBoomerAbi.abi,
+      eventName: "WamAdded",
+      onLogs: (logs) => {
+        /* @ts-ignore */
+        if (logs[0]?.args?.userAddress === user?.address) {
+          console.log("showing toast")
+
+          toast("Wam Agregado", {
+            description: "Wam Agregado Exitosamente",
+            action: {
+              label: "Close",
+              onClick: () => console.log("close"),
+            },
+          })
+        }
+      },
+    })
   }, [user, showToast])
 
   const addAlUser = async () => {
